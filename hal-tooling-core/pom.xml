@@ -24,7 +24,7 @@
     <parent>
         <groupId>com.github.codeframes</groupId>
         <artifactId>hal-tooling</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
     </parent>
 
     <artifactId>hal-tooling-core</artifactId>
