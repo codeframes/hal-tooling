@@ -1,7 +1,7 @@
 # hal-tooling-json
 
 A [Jackson](https://github.com/FasterXML/jackson) Module for serializing `com.github.hal.tooling.core.HalRepresentable`
-types ([hal-tooling-core](https://github.com/codeframes/hal-tooling-core)) to the JSON format of the
+types ([hal-tooling-core](https://github.com/codeframes/hal-tooling/tree/master/hal-tooling-core)) to the JSON format of the
 [HAL](https://tools.ietf.org/html/draft-kelly-json-hal) standard: **application/hal+json**
 
 ## Prerequisites

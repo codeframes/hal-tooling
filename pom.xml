@@ -24,7 +24,7 @@
     <groupId>com.github.codeframes</groupId>
     <artifactId>hal-tooling</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
 
     <name>HAL Tooling</name>
     <description>Parent pom for HAL Tooling project modules.</description>
@@ -48,7 +48,7 @@
         <url>https://github.com/codeframes/hal-tooling</url>
         <connection>scm:git:git://github.com/codeframes/hal-tooling.git</connection>
         <developerConnection>scm:git:git://github.com/codeframes/hal-tooling.git</developerConnection>
-        <tag>v1.0.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <distributionManagement>

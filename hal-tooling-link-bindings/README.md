@@ -1,7 +1,7 @@
 # hal-tooling-link-bindings
 
 A Module for injecting Link dependencies into `com.github.codeframes.hal.tooling.core.HalRepresentable` types
-([hal-tooling-core](https://github.com/codeframes/hal-tooling-core)).
+([hal-tooling-core](https://github.com/codeframes/hal-tooling/tree/master/hal-tooling-core)).
 
 ## Prerequisites
 
@@ -99,7 +99,7 @@ Perhaps the primary reason for using link bindings. This option is available on 
 of providing the link href property via the *value* attribute, the *resource* and *method* attributes are used to
 automatically extract the value from the RESTful API in use. Currently the only supported RESTful API is **JAX-RS 2.0**
 which requires an additional dependency, please see
-[hal-tooling-link-bindings-jax-rs](https://github.com/codeframes/hal-tooling-link-bindings-jax-rs) for more details.
+[hal-tooling-link-bindings-jax-rs](https://github.com/codeframes/hal-tooling/tree/master/hal-tooling-link-bindings-jax-rs) for more details.
 
 ### Link Styling
 

@@ -1,6 +1,6 @@
 # hal-tooling-link-bindings-jax-rs
 
-An extension to the [hal-tooling-link-bindings](https://github.com/codeframes/hal-tooling-link-bindings) module that
+An extension to the [hal-tooling-link-bindings](https://github.com/codeframes/hal-tooling/tree/master/hal-tooling-link-bindings) module that
 adds support for **JAX-RS 2.0** Resource Method Binding.
 
 ## Prerequisites
