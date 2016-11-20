@@ -34,8 +34,8 @@ class RootBeanLinkSetter implements BeanLinkSetter {
     @Override
     public void setLinks(Object entity, LinkContext linkContext) {
         final LinkProvider linkProvider = new LinkProvider(linkContext.forBean(entity), curieDescriptors);
-        for (LinkSetter linkFieldSetter : linkSetters) {
-            linkFieldSetter.setLinks(entity, linkProvider);
+        for (LinkSetter linkSetter : linkSetters) {
+            linkSetter.setLinks(entity, linkProvider);
         }
     }
 }

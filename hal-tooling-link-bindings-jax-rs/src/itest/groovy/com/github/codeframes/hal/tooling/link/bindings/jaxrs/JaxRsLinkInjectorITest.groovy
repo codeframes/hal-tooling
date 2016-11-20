@@ -24,10 +24,14 @@ import com.github.codeframes.hal.tooling.link.bindings.LinkRel
 import com.github.codeframes.hal.tooling.link.bindings.api.LinkContextResolver
 import com.github.codeframes.hal.tooling.link.bindings.api.LiteralLinkContextResolver
 import com.github.codeframes.hal.tooling.link.bindings.inject.LinkInjector
+import com.github.codeframes.hal.tooling.link.bindings.jaxrs.context.JaxRsLinkELContext
+import com.github.codeframes.hal.tooling.link.bindings.jaxrs.context.UriParameters
 import spock.lang.Specification
 
 import javax.ws.rs.*
+import javax.ws.rs.core.MultivaluedHashMap
 import javax.ws.rs.core.Response
+import javax.ws.rs.core.UriInfo
 
 class JaxRsLinkInjectorITest extends Specification {
 
@@ -35,7 +39,7 @@ class JaxRsLinkInjectorITest extends Specification {
     LinkInjector linkInjector
 
     def setup() {
-        linkContextResolver = new LiteralLinkContextResolver();
+        linkContextResolver = new LiteralLinkContextResolver()
         linkInjector = LinkInjector.instanceBuilder()
                 .linkTemplateFactory(new JaxRsLinkTemplateFactory())
                 .build()
@@ -43,9 +47,9 @@ class JaxRsLinkInjectorITest extends Specification {
 
     def "test injectLinks"() {
         given:
-          Representation representation = new Representation();
+          def representation = new Representation()
         when:
-          linkInjector.injectLinks(representation, linkContextResolver);
+          linkInjector.injectLinks(representation, linkContextResolver)
         then:
           representation.itemsLink == new Link('items', '/api/items/')
           representation.itemLink == new Link('item', '/api/items/get/{id}')
@@ -55,7 +59,7 @@ class JaxRsLinkInjectorITest extends Specification {
     }
 
     @Path("/api/items/")
-    public static interface Resource {
+    static interface Resource {
 
         @GET
         Response get()
@@ -76,49 +80,69 @@ class JaxRsLinkInjectorITest extends Specification {
         Response deleteItem()
     }
 
-    public static class Representation implements HalRepresentable {
+    static class Representation implements HalRepresentable {
 
         @LinkRel(rel = "items", resource = Resource.class, method = "get")
-        Link itemsLink;
+        Link itemsLink
 
         @LinkRel(rel = "item", resource = Resource.class, method = "getItem")
-        Link itemLink;
+        Link itemLink
 
         @LinkRel(rel = "create-item", resource = Resource.class, method = "addItem")
-        Link createItemLink;
+        Link createItemLink
 
         @LinkRel(rel = "update-item", resource = Resource.class, method = "setItem")
-        Link updateItemLink;
+        Link updateItemLink
 
         @LinkRel(rel = "remove-item", resource = Resource.class, method = "deleteItem")
-        Link removeItemLink;
+        Link removeItemLink
     }
 
     def "test injectLinks with curies"() {
         given:
-          CuriedRepresentation representation = new CuriedRepresentation();
+          def curiedRepresentation = new CuriedRepresentation()
         when:
-          linkInjector.injectLinks(representation, linkContextResolver);
+          linkInjector.injectLinks(curiedRepresentation, linkContextResolver)
         then:
-          representation.curies == [new Curie("ex", "http://example.com/docs/rels/{rel}")]
-          representation.selfLink == new Link('self', '/')
+          curiedRepresentation.curies == [new Curie("ex", "http://example.com/docs/rels/{rel}")]
+          curiedRepresentation.selfLink == new Link('self', '/')
     }
 
     @Path("/")
-    public static interface BasicResource {
+    static interface BasicResource {
 
         @GET
         Response get()
     }
 
-    public static class CuriedRepresentation implements HalRepresentable {
+    static class CuriedRepresentation implements HalRepresentable {
 
         @CurieDefs([
                 @CurieDef(name = "ex", value = "http://example.com/docs/rels/{rel}")
         ])
-        List<Curie> curies;
+        List<Curie> curies
 
         @LinkRel(resource = BasicResource.class)
-        Link selfLink;
+        Link selfLink
+    }
+
+    def "test injectLinks with uri parameters binding option"() {
+        given:
+          def mockUriInfo = Mock(UriInfo) {
+              getPathParameters() >> new MultivaluedHashMap([date: '2017-01-23T00:00:00.000Z'])
+              getQueryParameters() >> new MultivaluedHashMap([:])
+          }
+          def uriParametersBindingOptionRepresentation = new UriParametersBindingOptionRepresentation()
+          def linkELContext = new JaxRsLinkELContext(uriParametersBindingOptionRepresentation, new UriParameters(mockUriInfo))
+        when:
+          linkInjector.injectLinks(uriParametersBindingOptionRepresentation, linkContextResolver, linkELContext)
+        then:
+          uriParametersBindingOptionRepresentation.link == new Link("self", "/api/date/2017-01-23T00:00:00.000Z")
+    }
+
+    static class UriParametersBindingOptionRepresentation implements HalRepresentable {
+
+        @LinkRel(value = '/api/date/{date}', bindingOptions = [LinkRel.BindingOption.URI_PARAMETERS])
+        Link link
     }
 }
