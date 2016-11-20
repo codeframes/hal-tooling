@@ -28,6 +28,11 @@ public abstract class LinkELContext extends ELContext {
     public static final String INSTANCE_OBJECT = "instance";
 
     /**
+     * The uri object identifier.
+     */
+    public static final String URI_OBJECT = "uri";
+
+    /**
      * Returns an EL for retrieving the given parameter value on the instance object.
      *
      * @param parameter the parameter to construct an expression for
@@ -35,6 +40,16 @@ public abstract class LinkELContext extends ELContext {
      */
     public static String toParameterExpression(String parameter) {
         return "${" + INSTANCE_OBJECT + "." + parameter + "}";
+    }
+
+    /**
+     * Returns an EL for retrieving the given parameter value on the uri object.
+     *
+     * @param parameter the parameter to construct an expression for
+     * @return EL for retrieving the given parameter value
+     */
+    public static String toUriParameterExpression(String parameter) {
+        return "${" + URI_OBJECT + "." + parameter + "}";
     }
 
     /**

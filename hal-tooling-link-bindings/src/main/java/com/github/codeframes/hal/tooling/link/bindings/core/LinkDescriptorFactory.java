@@ -25,7 +25,12 @@ import com.github.codeframes.hal.tooling.link.bindings.context.LinkELContext;
 import com.github.codeframes.hal.tooling.link.bindings.types.CurieType;
 import com.github.codeframes.hal.tooling.link.bindings.types.LinkRelType;
 import com.github.codeframes.hal.tooling.link.bindings.utils.LinkTemplateUtils;
+import com.github.codeframes.hal.tooling.link.bindings.utils.TextUtils;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -49,20 +54,19 @@ public class LinkDescriptorFactory {
     /**
      * Returns a LinkDescriptor based on the provided linkRel.
      *
-     * @param linkRel the linkRel to construct a LinkDescriptor from
+     * @param declaringClass the class defining the field of which the LinkRel annotation is on
+     * @param linkRel        the linkRel to construct a LinkDescriptor from
      * @return LinkDescriptor based on linkRel
+     * @throws LinkDescriptorFactoryException if an error occurs while introspecting the declaringClass
      */
-    public LinkDescriptor createLinkDescriptor(LinkRel linkRel) {
+    public LinkDescriptor createLinkDescriptor(Class<?> declaringClass, LinkRel linkRel) {
         LinkRelType linkRelType = LinkRelType.valueOf(linkRel);
         String template = linkTemplateFactory.createLinkTemplate(linkRelType);
 
         Map<String, String> bindings = linkRelType.getBindings();
         Set<BindingOption> bindingOptions = linkRelType.getBindingOptions();
 
-        if (bindingOptions.contains(BindingOption.INSTANCE_PARAMETERS)) {
-            List<String> parameterNames = LinkTemplateUtils.extractParameterNames(template);
-            bindings = withInstanceParamBindings(parameterNames, bindings);
-        }
+        bindings = applyBindingOptions(declaringClass, template, bindings, bindingOptions);
 
         boolean removeUnexpanded = isRemoveUnexpanded(template, bindings, bindingOptions);
 
@@ -81,13 +85,83 @@ public class LinkDescriptorFactory {
                 linkRelType.getCurie());
     }
 
-    private static Map<String, String> withInstanceParamBindings(List<String> parameterNames, Map<String, String> bindings) {
-        Map<String, String> paramBindings = new HashMap<>(parameterNames.size());
-        for (String parameterName : parameterNames) {
-            paramBindings.put(parameterName, LinkELContext.toParameterExpression(parameterName));
+    private static Map<String, String> applyBindingOptions(Class<?> declaringClass,
+                                                           String template,
+                                                           Map<String, String> bindings,
+                                                           Set<BindingOption> bindingOptions) {
+
+        boolean isInstanceParameters = bindingOptions.contains(BindingOption.INSTANCE_PARAMETERS);
+        boolean isInstanceParametersSnakeCase = bindingOptions.contains(BindingOption.INSTANCE_PARAMETERS_SNAKE_CASE);
+        boolean isUriParameters = bindingOptions.contains(BindingOption.URI_PARAMETERS);
+
+        if (!isInstanceParameters && !isInstanceParametersSnakeCase && !isUriParameters) {
+            return bindings;
+        } else {
+            final List<String> parameterNames = LinkTemplateUtils.extractParameterNames(template);
+            Map<String, String> paramBindings = null;
+
+            if (isInstanceParameters || isInstanceParametersSnakeCase) {
+                BeanInfo beanInfo = getBeanInfo(declaringClass);
+                paramBindings = withInstanceParamBindings(beanInfo, parameterNames, bindings, isInstanceParametersSnakeCase);
+            }
+
+            if (isUriParameters) {
+                if (paramBindings == null) {
+                    paramBindings = new HashMap<>(bindings);
+                }
+
+                for (String parameterName : parameterNames) {
+                    if (!paramBindings.containsKey(parameterName)) {
+                        paramBindings.put(parameterName, LinkELContext.toUriParameterExpression(parameterName));
+                    }
+                }
+            }
+            return paramBindings == null ? bindings : paramBindings;
         }
-        paramBindings.putAll(bindings);
+    }
+
+    private static BeanInfo getBeanInfo(Class<?> beanClass) {
+        try {
+            return Introspector.getBeanInfo(beanClass);
+        } catch (IntrospectionException e) {
+            throw new LinkDescriptorFactoryException(
+                    String.format("Could not introspect class: %s, required for link binding resolution", beanClass), e);
+        }
+    }
+
+    private static Map<String, String> withInstanceParamBindings(BeanInfo beanInfo,
+                                                                 List<String> parameterNames,
+                                                                 Map<String, String> bindings,
+                                                                 boolean viewParamsAsSnakeCase) {
+
+        Map<String, String> paramBindings = new HashMap<>(bindings);
+        for (String parameterName : parameterNames) {
+            if (paramBindings.containsKey(parameterName)) {
+                continue;
+            }
+
+            final String parameter;
+            if (viewParamsAsSnakeCase) {
+                parameter = TextUtils.snakeCaseToCamelCase(parameterName);
+            } else {
+                parameter = parameterName;
+            }
+
+            if (hasProperty(beanInfo, parameter)) {
+                paramBindings.put(parameterName, LinkELContext.toParameterExpression(parameter));
+            }
+        }
         return paramBindings;
+    }
+
+    private static boolean hasProperty(BeanInfo beanInfo, String property) {
+        for (PropertyDescriptor propertyDescriptor : beanInfo.getPropertyDescriptors()) {
+            String name = propertyDescriptor.getName();
+            if (name.equals(property)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean isRemoveUnexpanded(String template, Map<String, String> bindings, Set<BindingOption> bindingOptions) {
@@ -97,21 +171,22 @@ public class LinkDescriptorFactory {
     /**
      * Returns a List of LinkDescriptor's based on the provided linkRels.
      *
-     * @param linkRels the linkRels to construct a List of LinkDescriptor's from
+     * @param declaringClass the class defining the field of which the LinkRels annotation is on
+     * @param linkRels       the linkRels to construct a List of LinkDescriptor's from
      * @return List of LinkDescriptor's based on linkRels
      * @throws IllegalArgumentException if a 'self' rel is present and has not been declared first
      */
-    public List<LinkDescriptor> createLinkDescriptors(LinkRels linkRels) {
+    public List<LinkDescriptor> createLinkDescriptors(Class<?> declaringClass, LinkRels linkRels) {
         List<LinkDescriptor> linkDescriptors = new ArrayList<>();
         Iterator<LinkRel> linkRelsItr = Arrays.asList(linkRels.value()).iterator();
         if (linkRelsItr.hasNext()) {
-            linkDescriptors.add(createLinkDescriptor(linkRelsItr.next()));
+            linkDescriptors.add(createLinkDescriptor(declaringClass, linkRelsItr.next()));
             while (linkRelsItr.hasNext()) {
                 LinkRel linkRel = linkRelsItr.next();
                 if (linkRel.rel().equals(LinkRel.DEFAULT_REL)) {
                     throw new IllegalArgumentException("self rel MUST be declared first when using " + LinkRels.class.getName());
                 }
-                linkDescriptors.add(createLinkDescriptor(linkRel));
+                linkDescriptors.add(createLinkDescriptor(declaringClass, linkRel));
             }
         }
         return linkDescriptors;

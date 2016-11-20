@@ -50,7 +50,7 @@ class LinkDescriptorFactoryTest extends Specification {
                   style: Style.RELATIVE_PATH
           )
         when:
-          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(linkRel)
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(Bean, linkRel)
         then:
           1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api'
         and:
@@ -72,7 +72,7 @@ class LinkDescriptorFactoryTest extends Specification {
         given:
           def linkRel = typeBuilders.newLinkRel(value: '/api/{id}', bindingOptions: [LinkRel.BindingOption.INSTANCE_PARAMETERS])
         when:
-          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(linkRel)
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(BeanWithIdProperty, linkRel)
         then:
           1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/{id}'
         and:
@@ -90,6 +90,212 @@ class LinkDescriptorFactoryTest extends Specification {
           }
     }
 
+    def "test createLinkDescriptor with instance parameters binding option with no matching property"() {
+        given:
+          def linkRel = typeBuilders.newLinkRel(value: '/items/{item_id}', bindingOptions: [LinkRel.BindingOption.INSTANCE_PARAMETERS])
+        when:
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(BeanWithIdProperty, linkRel)
+        then:
+          1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/items/{item_id}'
+        and:
+          with(linkDescriptor) {
+              rel == 'self'
+              hrefTemplate == new HrefTemplate('/items/{item_id}', Style.ABSOLUTE_PATH)
+              type == null
+              deprecation == null
+              name == null
+              profile == null
+              title == null
+              hreflang == null
+              condition == null
+              curie == null
+          }
+    }
+
+    def "test createLinkDescriptor with uri parameters binding option"() {
+        given:
+          def linkRel = typeBuilders.newLinkRel(value: '/api/{id}', bindingOptions: [LinkRel.BindingOption.URI_PARAMETERS])
+        when:
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(BeanWithIdProperty, linkRel)
+        then:
+          1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/{id}'
+        and:
+          with(linkDescriptor) {
+              rel == 'self'
+              hrefTemplate == new HrefTemplate('/api/{id}', Style.ABSOLUTE_PATH, [id: '${uri.id}'], true)
+              type == null
+              deprecation == null
+              name == null
+              profile == null
+              title == null
+              hreflang == null
+              condition == null
+              curie == null
+          }
+    }
+
+    def "test createLinkDescriptor with uri parameters and instance parameters binding options"() {
+        given:
+          def linkRel = typeBuilders.newLinkRel(
+                  value: '/api/{id}',
+                  bindingOptions: [LinkRel.BindingOption.URI_PARAMETERS, LinkRel.BindingOption.INSTANCE_PARAMETERS]
+          )
+        when:
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(BeanWithIdProperty, linkRel)
+        then:
+          1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/{id}'
+        and:
+          with(linkDescriptor) {
+              rel == 'self'
+              hrefTemplate == new HrefTemplate('/api/{id}', Style.ABSOLUTE_PATH, [id: '${instance.id}'], true)
+              type == null
+              deprecation == null
+              name == null
+              profile == null
+              title == null
+              hreflang == null
+              condition == null
+              curie == null
+          }
+    }
+
+    def "test createLinkDescriptor with uri parameters and instance parameters snake case binding options"() {
+        given:
+          def linkRel = typeBuilders.newLinkRel(
+                  value: '/api/{id}',
+                  bindingOptions: [LinkRel.BindingOption.URI_PARAMETERS, LinkRel.BindingOption.INSTANCE_PARAMETERS_SNAKE_CASE]
+          )
+        when:
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(BeanWithIdProperty, linkRel)
+        then:
+          1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/{id}'
+        and:
+          with(linkDescriptor) {
+              rel == 'self'
+              hrefTemplate == new HrefTemplate('/api/{id}', Style.ABSOLUTE_PATH, [id: '${instance.id}'], true)
+              type == null
+              deprecation == null
+              name == null
+              profile == null
+              title == null
+              hreflang == null
+              condition == null
+              curie == null
+          }
+    }
+
+    def "test createLinkDescriptor with instance parameters binding option and defined bindings"() {
+        given:
+          def linkRel = typeBuilders.newLinkRel(
+                  value: '/api/{id}',
+                  bindings: [
+                          typeBuilders.newBinding([
+                                  name : 'id',
+                                  value: '${instance.uuid}'
+                          ])
+                  ],
+                  bindingOptions: [LinkRel.BindingOption.INSTANCE_PARAMETERS])
+        when:
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(BeanWithIdProperty, linkRel)
+        then:
+          1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/{id}'
+        and:
+          with(linkDescriptor) {
+              rel == 'self'
+              hrefTemplate == new HrefTemplate('/api/{id}', Style.ABSOLUTE_PATH, [id: '${instance.uuid}'], true)
+              type == null
+              deprecation == null
+              name == null
+              profile == null
+              title == null
+              hreflang == null
+              condition == null
+              curie == null
+          }
+    }
+
+    def "test createLinkDescriptor with uri parameters binding option and defined bindings"() {
+        given:
+          def linkRel = typeBuilders.newLinkRel(
+                  value: '/api/{id}',
+                  bindings: [
+                          typeBuilders.newBinding([
+                                  name : 'id',
+                                  value: '${instance.uuid}'
+                          ])
+                  ],
+                  bindingOptions: [LinkRel.BindingOption.URI_PARAMETERS])
+        when:
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(BeanWithIdProperty, linkRel)
+        then:
+          1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/{id}'
+        and:
+          with(linkDescriptor) {
+              rel == 'self'
+              hrefTemplate == new HrefTemplate('/api/{id}', Style.ABSOLUTE_PATH, [id: '${instance.uuid}'], true)
+              type == null
+              deprecation == null
+              name == null
+              profile == null
+              title == null
+              hreflang == null
+              condition == null
+              curie == null
+          }
+    }
+
+    static class BeanWithIdProperty {
+        String id
+    }
+
+    def "test createLinkDescriptor with instance parameters snake case binding option"() {
+        given:
+          def linkRel = typeBuilders.newLinkRel(value: '/items/{item_id}', bindingOptions: [LinkRel.BindingOption.INSTANCE_PARAMETERS_SNAKE_CASE])
+        when:
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(BeanWithItemIdProperty, linkRel)
+        then:
+          1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/items/{item_id}'
+        and:
+          with(linkDescriptor) {
+              rel == 'self'
+              hrefTemplate == new HrefTemplate('/items/{item_id}', Style.ABSOLUTE_PATH, [item_id: '${instance.itemId}'], true)
+              type == null
+              deprecation == null
+              name == null
+              profile == null
+              title == null
+              hreflang == null
+              condition == null
+              curie == null
+          }
+    }
+
+    def "test createLinkDescriptor with instance parameters snake case binding option with no matching property"() {
+        given:
+          def linkRel = typeBuilders.newLinkRel(value: '/api/{id}', bindingOptions: [LinkRel.BindingOption.INSTANCE_PARAMETERS_SNAKE_CASE])
+        when:
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(BeanWithItemIdProperty, linkRel)
+        then:
+          1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/{id}'
+        and:
+          with(linkDescriptor) {
+              rel == 'self'
+              hrefTemplate == new HrefTemplate('/api/{id}', Style.ABSOLUTE_PATH)
+              type == null
+              deprecation == null
+              name == null
+              profile == null
+              title == null
+              hreflang == null
+              condition == null
+              curie == null
+          }
+    }
+
+    static class BeanWithItemIdProperty {
+        String itemId
+    }
+
     def "test createLinkDescriptor with retain unexpanded binding option"() {
         given:
           def linkRel = typeBuilders.newLinkRel(
@@ -102,7 +308,7 @@ class LinkDescriptorFactoryTest extends Specification {
                   ],
                   bindingOptions: [LinkRel.BindingOption.RETAIN_UNEXPANDED])
         when:
-          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(linkRel)
+          def linkDescriptor = linkDescriptorFactory.createLinkDescriptor(Bean, linkRel)
         then:
           1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/{id}'
         and:
@@ -126,7 +332,7 @@ class LinkDescriptorFactoryTest extends Specification {
               value() >> []
           }
         when:
-          def linkDescriptors = linkDescriptorFactory.createLinkDescriptors(linkRels)
+          def linkDescriptors = linkDescriptorFactory.createLinkDescriptors(Bean, linkRels)
         then:
           linkDescriptors == []
     }
@@ -139,7 +345,7 @@ class LinkDescriptorFactoryTest extends Specification {
               ]
           }
         when:
-          def linkDescriptors = linkDescriptorFactory.createLinkDescriptors(linkRels)
+          def linkDescriptors = linkDescriptorFactory.createLinkDescriptors(Bean, linkRels)
         then:
           1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api'
         and:
@@ -160,7 +366,7 @@ class LinkDescriptorFactoryTest extends Specification {
               ]
           }
         when:
-          def linkDescriptors = linkDescriptorFactory.createLinkDescriptors(linkRels)
+          def linkDescriptors = linkDescriptorFactory.createLinkDescriptors(Bean, linkRels)
         then:
           1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/a'
           1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/b'
@@ -186,11 +392,14 @@ class LinkDescriptorFactoryTest extends Specification {
               ]
           }
         when:
-          linkDescriptorFactory.createLinkDescriptors(linkRels)
+          linkDescriptorFactory.createLinkDescriptors(Bean, linkRels)
         then:
           1 * mockHrefTemplateFactory.createLinkTemplate(_) >> '/api/a'
         and:
           thrown(IllegalArgumentException)
+    }
+
+    static class Bean {
     }
 
     def "test createCurieDescriptor"() {

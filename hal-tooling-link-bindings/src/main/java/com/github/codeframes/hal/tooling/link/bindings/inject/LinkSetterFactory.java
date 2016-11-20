@@ -130,7 +130,7 @@ class LinkSetterFactory {
             }
         }
 
-        LinkDescriptor linkDescriptor = linkDescriptorFactory.createLinkDescriptor(linkRel);
+        LinkDescriptor linkDescriptor = linkDescriptorFactory.createLinkDescriptor(field.getDeclaringClass(), linkRel);
         if (!rels.add(linkDescriptor.getRel())) {
             throw new IllegalArgumentException(String.format("Duplicate rel found: '%s', on %s", linkDescriptor.getRel(), field.getDeclaringClass()));
         }
@@ -150,10 +150,12 @@ class LinkSetterFactory {
     private LinkSetter createLinkRelsFieldSetter(Field field, Set<String> rels) {
 
         FieldAccessor fieldDescriptor = new FieldAccessor(field);
-        List<LinkDescriptor> linkDescriptors = linkDescriptorFactory.createLinkDescriptors(field.getAnnotation(LinkRels.class));
+        List<LinkDescriptor> linkDescriptors = linkDescriptorFactory
+                .createLinkDescriptors(field.getDeclaringClass(), field.getAnnotation(LinkRels.class));
         for (LinkDescriptor linkDescriptor : linkDescriptors) {
             if (!rels.add(linkDescriptor.getRel())) {
-                throw new IllegalArgumentException(String.format("Duplicate rel found: '%s', on %s", linkDescriptor.getRel(), field.getDeclaringClass()));
+                throw new IllegalArgumentException(String.format("Duplicate rel found: '%s', on %s",
+                        linkDescriptor.getRel(), field.getDeclaringClass()));
             }
         }
 

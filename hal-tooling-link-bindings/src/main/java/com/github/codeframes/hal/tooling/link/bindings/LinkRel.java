@@ -43,13 +43,27 @@ public @interface LinkRel {
     enum BindingOption {
         /**
          * URI Template parameters are taken as referring to representation instance parameters and are subsequently
-         * used for template expansion.
+         * used for template expansion if available.
          */
         INSTANCE_PARAMETERS,
         /**
+         * URI Template parameters are taken as referring to representation instance parameters and are subsequently
+         * used for template expansion if available. This option differs from {@link BindingOption#INSTANCE_PARAMETERS}
+         * in that instance parameters are viewed as if they where written in snake_case. This is useful when a
+         * representation class is to be serialised with snake_case property names but it's actual property names follow
+         * the standard Java naming convention (camelCase). Note: URI Template parameters will also need to be snake_case.
+         */
+        INSTANCE_PARAMETERS_SNAKE_CASE,
+        /**
          * URI Template parameters that are not expanded and preserved as template expressions.
          */
-        RETAIN_UNEXPANDED
+        RETAIN_UNEXPANDED,
+        /**
+         * URI parameters are taken from the actual URI request and are subsequently used for template expansion. Note:
+         * If used with either {@link BindingOption#INSTANCE_PARAMETERS} or {@link BindingOption#INSTANCE_PARAMETERS_SNAKE_CASE}
+         * options then precedence is with them.
+         */
+        URI_PARAMETERS
     }
 
     /**
