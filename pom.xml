@@ -24,7 +24,7 @@
     <groupId>com.github.codeframes</groupId>
     <artifactId>hal-tooling</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.0</version>
+    <version>1.1.1-SNAPSHOT</version>
 
     <name>HAL Tooling</name>
     <description>Parent pom for HAL Tooling project modules.</description>

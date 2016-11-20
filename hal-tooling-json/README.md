@@ -15,7 +15,7 @@ types ([hal-tooling-core](https://github.com/codeframes/hal-tooling/tree/master/
 <properties>
   ...
   <!-- Use the latest version whenever possible. -->
-  <hal-tooling.version>1.0.0</hal-tooling.version>
+  <hal-tooling.version>1.1.1</hal-tooling.version>
   ...
 </properties>
 
