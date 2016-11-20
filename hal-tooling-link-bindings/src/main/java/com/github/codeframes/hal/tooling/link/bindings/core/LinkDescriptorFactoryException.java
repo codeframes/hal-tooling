@@ -16,11 +16,11 @@
 package com.github.codeframes.hal.tooling.link.bindings.core;
 
 /**
- * Thrown in the event that a field cannot be accessed.
+ * Thrown in the event of an issue creating a LinkDescriptor.
  */
-public class FieldAccessorException extends RuntimeException {
+public class LinkDescriptorFactoryException extends RuntimeException {
 
-    FieldAccessorException(String message, Throwable cause) {
+    LinkDescriptorFactoryException(String message, Throwable cause) {
         super(message, cause);
     }
 }

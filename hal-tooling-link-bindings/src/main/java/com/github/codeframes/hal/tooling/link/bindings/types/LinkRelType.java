@@ -144,12 +144,20 @@ public final class LinkRelType {
     }
 
     private static Set<BindingOption> toBindingOptions(LinkRel linkRel) {
-        List<BindingOption> bindingOptions = Arrays.asList(linkRel.bindingOptions());
-        if (bindingOptions.isEmpty()) {
-            return Collections.emptySet();
+        final Set<BindingOption> bindingOptions;
+        List<BindingOption> bos = Arrays.asList(linkRel.bindingOptions());
+        if (bos.isEmpty()) {
+            bindingOptions = Collections.emptySet();
         } else {
-            return EnumSet.copyOf(bindingOptions);
+            bindingOptions = EnumSet.copyOf(bos);
         }
+
+        if (bindingOptions.contains(BindingOption.INSTANCE_PARAMETERS)
+                && bindingOptions.contains(BindingOption.INSTANCE_PARAMETERS_SNAKE_CASE)) {
+            throw new IllegalArgumentException(String.format("Cannot specify both LinkRel.bindings %s and %s, they are mutually exclusive",
+                    BindingOption.INSTANCE_PARAMETERS, BindingOption.INSTANCE_PARAMETERS_SNAKE_CASE));
+        }
+        return bindingOptions;
     }
 
     /**

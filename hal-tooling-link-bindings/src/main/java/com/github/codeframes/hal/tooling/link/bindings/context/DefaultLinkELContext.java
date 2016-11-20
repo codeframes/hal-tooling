@@ -33,9 +33,9 @@ import java.util.Map;
  * <td>The reference to the entity object (container/parent)</td>
  * <td>${{@value #ENTITY_OBJECT}}</td></tr>
  * <tr>
- * <td>{@value #ENTITY_OBJECT}</td>
+ * <td>{@value #INSTANCE_OBJECT}</td>
  * <td>The reference to the instance object</td>
- * <td>${{@value #ENTITY_OBJECT}}</td>
+ * <td>${{@value #INSTANCE_OBJECT}}</td>
  * </tr></tbody></table>
  */
 public class DefaultLinkELContext extends LinkELContext {
@@ -53,15 +53,28 @@ public class DefaultLinkELContext extends LinkELContext {
      * @param entity the entity object (container/parent)
      */
     public DefaultLinkELContext(Object entity) {
-        this(toObjects(entity));
+        this(entity, Collections.<String, Object>emptyMap());
     }
 
-    private DefaultLinkELContext(Map<String, Object> objects) {
+    /**
+     * Constructs a DefaultLinkELContext for the given entity and additional object identifiers.
+     *
+     * @param entity      the entity object (container/parent)
+     * @param identifiers a map of additional object identifiers to make available to Link EL expressions
+     */
+    public DefaultLinkELContext(Object entity, Map<String, Object> identifiers) {
+        this(toObjects(entity, identifiers));
+    }
+
+    protected DefaultLinkELContext(Map<String, Object> objects) {
         this.objects = Collections.unmodifiableMap(objects);
     }
 
-    private static Map<String, Object> toObjects(Object entity) {
-        final Map<String, Object> objects = new HashMap<>(2);
+    private static Map<String, Object> toObjects(Object entity, Map<String, Object> identifiers) {
+        final Map<String, Object> objects = new HashMap<>(2 + identifiers.size());
+        for (Map.Entry<String, Object> entry : identifiers.entrySet()) {
+            objects.put(entry.getKey(), Validate.notNull(entry.getValue(), entry.getKey()));
+        }
         objects.put(ENTITY_OBJECT, Validate.notNull(entity, ENTITY_OBJECT));
         objects.put(INSTANCE_OBJECT, Validate.notNull(entity, INSTANCE_OBJECT));
         return objects;

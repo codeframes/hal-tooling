@@ -16,8 +16,10 @@
 package com.github.codeframes.hal.tooling.test.json
 
 /**
- * Encapsulates a String or GString as a JSON type specifically for use with {@link com.github.codeframes.hal.tooling.test.http.HttpClient}
- * to help aid assertions. Also adds asType support to String and GString for convenient type coercion.
+ * Encapsulates a String or GString as a JSON type specifically for use with
+ * {@link com.github.codeframes.hal.tooling.test.http.HttpClient} to help aid assertions. Also adds asType support to
+ * String and GString for convenient type coercion via static initialization. Meaning that for the 'as' Coercion
+ * operator to work with this class, this class MUST have already been loaded.
  */
 class JSON {
 

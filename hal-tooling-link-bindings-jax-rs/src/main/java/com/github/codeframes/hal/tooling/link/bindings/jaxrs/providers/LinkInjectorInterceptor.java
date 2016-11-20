@@ -16,9 +16,13 @@
 package com.github.codeframes.hal.tooling.link.bindings.jaxrs.providers;
 
 import com.github.codeframes.hal.tooling.core.HalRepresentable;
+import com.github.codeframes.hal.tooling.link.bindings.api.LinkContextResolver;
+import com.github.codeframes.hal.tooling.link.bindings.context.LinkELContext;
 import com.github.codeframes.hal.tooling.link.bindings.inject.LinkInjector;
 import com.github.codeframes.hal.tooling.link.bindings.jaxrs.JaxRsLinkContextResolver;
 import com.github.codeframes.hal.tooling.link.bindings.jaxrs.JaxRsLinkTemplateFactory;
+import com.github.codeframes.hal.tooling.link.bindings.jaxrs.context.UriParameters;
+import com.github.codeframes.hal.tooling.link.bindings.jaxrs.context.JaxRsLinkELContext;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -54,7 +58,9 @@ public class LinkInjectorInterceptor implements WriterInterceptor {
     public void aroundWriteTo(WriterInterceptorContext context) throws IOException {
         final Object entity = context.getEntity();
         if (entity instanceof HalRepresentable) {
-            linkInjector.injectLinks((HalRepresentable) entity, new JaxRsLinkContextResolver(uriInfo));
+            final LinkELContext linkELContext = new JaxRsLinkELContext(entity, new UriParameters(uriInfo));
+            final LinkContextResolver linkContextResolver = new JaxRsLinkContextResolver(uriInfo);
+            linkInjector.injectLinks((HalRepresentable) entity, linkContextResolver, linkELContext);
         }
         context.proceed();
     }

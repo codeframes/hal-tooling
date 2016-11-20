@@ -47,13 +47,22 @@ public abstract class LinkInjector {
 
     /**
      * Injects links into the given entity on fields annotated with one of ({@link LinkRel LinkRel},
-     * {@link LinkRels LinkRels}, {@link CurieDef CurieDef},
-     * {@link CurieDefs CurieDefs}).
+     * {@link LinkRels LinkRels}, {@link CurieDef CurieDef}, {@link CurieDefs CurieDefs}).
      *
      * @param entity              the bean of which to inject links
      * @param linkContextResolver responsible for resolving link contexts which is used for link styling
      */
     public abstract void injectLinks(final HalRepresentable entity, final LinkContextResolver linkContextResolver);
+
+    /**
+     * Injects links into the given entity on fields annotated with one of ({@link LinkRel LinkRel},
+     * {@link LinkRels LinkRels}, {@link CurieDef CurieDef}, {@link CurieDefs CurieDefs}).
+     *
+     * @param entity              the bean of which to inject links
+     * @param linkContextResolver responsible for resolving link contexts which is used for link styling
+     * @param linkELContext       the Link ELContext used for EL evaluations in link bindings.
+     */
+    public abstract void injectLinks(final HalRepresentable entity, final LinkContextResolver linkContextResolver, final LinkELContext linkELContext);
 
     /**
      * The default LinkInjector.
@@ -156,11 +165,21 @@ public abstract class LinkInjector {
         @Override
         public void injectLinks(final HalRepresentable entity, final LinkContextResolver linkContextResolver) {
             if (entity != null) {
-                final LinkELContext linkELContext = new DefaultLinkELContext(entity);
-                final LinkContext linkContext = new DefaultLinkContext(expressionFactory, linkContextResolver, uriTemplateExpander, linkELContext);
-                final BeanLinkSetter beanLinkSetter = linkSetterFactory.getBeanLinkSetter(entity.getClass());
-                beanLinkSetter.setLinks(entity, linkContext);
+                setLinks(entity, linkContextResolver, new DefaultLinkELContext(entity));
             }
+        }
+
+        @Override
+        public void injectLinks(final HalRepresentable entity, final LinkContextResolver linkContextResolver, final LinkELContext linkELContext) {
+            if (entity != null) {
+                setLinks(entity, linkContextResolver, linkELContext);
+            }
+        }
+
+        private void setLinks(final HalRepresentable entity, final LinkContextResolver linkContextResolver, final LinkELContext linkELContext) {
+            final LinkContext linkContext = new DefaultLinkContext(expressionFactory, linkContextResolver, uriTemplateExpander, linkELContext);
+            final BeanLinkSetter beanLinkSetter = linkSetterFactory.getBeanLinkSetter(entity.getClass());
+            beanLinkSetter.setLinks(entity, linkContext);
         }
     }
 

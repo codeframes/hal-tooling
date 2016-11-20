@@ -18,12 +18,14 @@ package com.github.codeframes.hal.tooling.link.bindings.jaxrs.providers;
 import com.github.codeframes.hal.tooling.core.HalRepresentable;
 import com.github.codeframes.hal.tooling.link.bindings.inject.LinkInjector;
 import com.github.codeframes.hal.tooling.link.bindings.jaxrs.JaxRsLinkContextResolver;
+import com.github.codeframes.hal.tooling.link.bindings.jaxrs.context.JaxRsLinkELContext;
 import mockit.Deencapsulation;
 import mockit.Mocked;
 import mockit.StrictExpectations;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.WriterInterceptorContext;
 
 public class LinkInjectorInterceptorTest {
@@ -34,12 +36,16 @@ public class LinkInjectorInterceptorTest {
     @Mocked
     WriterInterceptorContext mockContext;
 
+    @Mocked
+    UriInfo mockUriInfo;
+
     LinkInjectorInterceptor interceptor;
 
     @Before
     public void setUp() throws Exception {
         interceptor = new LinkInjectorInterceptor();
         Deencapsulation.setField(interceptor, mockLinkInjector);
+        Deencapsulation.setField(interceptor, mockUriInfo);
     }
 
     @Test
@@ -51,7 +57,11 @@ public class LinkInjectorInterceptorTest {
             mockContext.getEntity();
             result = representation;
 
-            mockLinkInjector.injectLinks(representation, withInstanceOf(JaxRsLinkContextResolver.class));
+            mockLinkInjector.injectLinks(
+                    representation,
+                    withInstanceOf(JaxRsLinkContextResolver.class),
+                    withInstanceOf(JaxRsLinkELContext.class)
+            );
 
             mockContext.proceed();
         }};

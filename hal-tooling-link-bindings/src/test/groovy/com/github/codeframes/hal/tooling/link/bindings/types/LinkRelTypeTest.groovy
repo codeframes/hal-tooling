@@ -202,4 +202,15 @@ class LinkRelTypeTest extends Specification {
           'name'       | ''
           'name'       | '    '
     }
+
+    def "test valueOf with illegal binding options"() {
+        when:
+          linkRelBuilders.newLinkRelType(
+                  rel: 'rel',
+                  value: '/api',
+                  bindingOptions: [LinkRel.BindingOption.INSTANCE_PARAMETERS, LinkRel.BindingOption.INSTANCE_PARAMETERS_SNAKE_CASE]
+          )
+        then:
+          thrown(IllegalArgumentException)
+    }
 }

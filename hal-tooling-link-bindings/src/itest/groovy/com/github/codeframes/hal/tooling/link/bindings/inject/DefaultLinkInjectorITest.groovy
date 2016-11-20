@@ -242,19 +242,45 @@ class DefaultLinkInjectorITest extends Specification {
         when:
           linkInjector.injectLinks(bean, linkContextResolver)
         then:
-          bean.links == [new Link("binding-inst-param", "/api/123"),
-                         new Link("unbound", "/api/456/")]
+          bean.links == [new Link("binding-inst-param", "/api/orders/123/items/"),
+                         new Link("binding-retain-unexpanded", "/api/orders/123/items/{itemId}")]
     }
 
     static class BeanWithInstanceParametersBindingOption implements HalRepresentable {
 
         @LinkRels([
-                @LinkRel(rel = "binding-inst-param", value = '/api{/id}', bindingOptions = [LinkRel.BindingOption.INSTANCE_PARAMETERS]),
-                @LinkRel(rel = "unbound", value = "/api/456/")
+                @LinkRel(rel = "binding-inst-param", value = '/api/orders/{orderId}/items/{itemId}',
+                        bindingOptions = LinkRel.BindingOption.INSTANCE_PARAMETERS),
+                @LinkRel(rel = "binding-retain-unexpanded", value = "/api/orders/{orderId}/items/{itemId}",
+                        bindingOptions = [LinkRel.BindingOption.INSTANCE_PARAMETERS, LinkRel.BindingOption.RETAIN_UNEXPANDED])
         ])
         List<Link> links
 
-        String id = '123'
+        String orderId = '123'
+    }
+
+    def "test injectLinks with instance parameters snake case binding option"() {
+        given:
+          def bean = new BeanWithInstanceParametersSnakeCaseBindingOption()
+        when:
+          linkInjector.injectLinks(bean, linkContextResolver)
+        then:
+          bean.links == [new Link("binding-inst-param", "/api/orders/123/items/"),
+                         new Link("binding-retain-unexpanded", "/api/orders/123/items/{item_id}")]
+    }
+
+    static class BeanWithInstanceParametersSnakeCaseBindingOption implements HalRepresentable {
+
+        @LinkRels([
+                @LinkRel(rel = "binding-inst-param", value = "/api/orders/{order_id}/items/{item_id}",
+                        bindingOptions = LinkRel.BindingOption.INSTANCE_PARAMETERS_SNAKE_CASE)
+                ,
+                @LinkRel(rel = "binding-retain-unexpanded", value = "/api/orders/{order_id}/items/{item_id}",
+                        bindingOptions = [LinkRel.BindingOption.INSTANCE_PARAMETERS_SNAKE_CASE, LinkRel.BindingOption.RETAIN_UNEXPANDED])
+        ])
+        List<Link> links
+
+        String orderId = '123'
     }
 
     def "test injectLinks with UriValueResolver using instance parameters binding option"() {
