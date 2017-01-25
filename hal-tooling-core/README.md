@@ -14,7 +14,6 @@ Consists of types used to model [HAL](https://tools.ietf.org/html/draft-kelly-js
   ...
   <!-- Use the latest version whenever possible. -->
   <hal-tooling.version>1.1.1</hal-tooling.version>
-  ...
 </properties>
 
 <dependencies>
