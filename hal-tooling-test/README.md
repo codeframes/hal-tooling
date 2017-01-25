@@ -15,7 +15,6 @@ extensions used for testing RESTful API's.
   ...
   <!-- Use the latest version whenever possible. -->
   <hal-tooling.version>1.1.1</hal-tooling.version>
-  ...
 </properties>
 
 <dependencies>
