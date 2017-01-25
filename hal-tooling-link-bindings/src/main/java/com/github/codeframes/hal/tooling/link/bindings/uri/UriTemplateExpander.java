@@ -29,7 +29,7 @@ import java.util.regex.Pattern;
  */
 public class UriTemplateExpander {
 
-    private static final Pattern TEMPLATE_PATTERN = Pattern.compile("\\{([?.+/&#;])?([\\w,]+)\\}");
+    private static final Pattern TEMPLATE_PATTERN = Pattern.compile("\\{([?.+/&#;])?([\\w,]+)}");
 
     private final Map<Class<?>, UriValueResolver<?>> uriValueResolvers;
 
@@ -162,13 +162,22 @@ public class UriTemplateExpander {
         final UriValueResolver resolver = uriValueResolvers.get(value.getClass());
         String text = value.toString();
         try {
-            if (!text.contains("/")) {
+            if (requiresEncoding(text)) {
                 text = URLEncoder.encode(text, "UTF-8");
             }
             return resolver == null ? text : resolver.resolve(value);
         } catch (UnsupportedEncodingException e) {
             throw new IllegalArgumentException("Could not url encode: " + text, e);
         }
+    }
+
+    private static boolean requiresEncoding(String text) {
+        for (char c : text.toCharArray()) {
+            if (c == '%' || c == '#' || c == '"' || (c > 'Z' && c < '_') || c == '<' || c == '>' || c < '!' || c > 'z' || c == '`') {
+                return true;
+            }
+        }
+        return false;
     }
 
     private enum ExpressionOperator {
@@ -231,22 +240,18 @@ public class UriTemplateExpander {
         }
 
         String template(Set<String> names) {
-            return appendTemplate(names, operator, ",");
+            return appendTemplate(names, operator);
         }
 
         String appendTemplate(Set<String> names) {
-            return appendTemplate(names, ",");
+            return appendTemplate(names, templateOperator);
         }
 
-        String appendTemplate(Set<String> names, String separator) {
-            return appendTemplate(names, templateOperator, separator);
-        }
-
-        String appendTemplate(Set<String> names, String operator, String separator) {
+        String appendTemplate(Set<String> names, String operator) {
             StringBuilder sb = new StringBuilder();
             sb.append('{').append(operator);
             for (String name : names) {
-                sb.append(name).append(separator);
+                sb.append(name).append(',');
             }
             sb.setCharAt(sb.length() - 1, '}');
             return sb.toString();
