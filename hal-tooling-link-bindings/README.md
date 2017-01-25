@@ -15,7 +15,6 @@ A Module for injecting Link dependencies into `com.github.codeframes.hal.tooling
   ...
   <!-- Use the latest version whenever possible. -->
   <hal-tooling.version>1.1.1</hal-tooling.version>
-  ...
 </properties>
 
 <dependencies>

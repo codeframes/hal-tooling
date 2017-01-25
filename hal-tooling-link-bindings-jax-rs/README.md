@@ -15,7 +15,6 @@ adds support for **JAX-RS 2.0** Resource Method Binding.
   ...
   <!-- Use the latest version whenever possible. -->
   <hal-tooling.version>1.1.1</hal-tooling.version>
-  ...
 </properties>
 
 <dependencies>

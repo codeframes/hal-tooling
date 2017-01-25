@@ -48,7 +48,7 @@
         <url>https://github.com/codeframes/hal-tooling</url>
         <connection>scm:git:git://github.com/codeframes/hal-tooling.git</connection>
         <developerConnection>scm:git:git://github.com/codeframes/hal-tooling.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v1.1.0</tag>
     </scm>
 
     <distributionManagement>
