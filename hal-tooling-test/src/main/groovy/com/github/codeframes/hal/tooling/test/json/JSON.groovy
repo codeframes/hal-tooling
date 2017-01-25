@@ -15,6 +15,8 @@
  */
 package com.github.codeframes.hal.tooling.test.json
 
+import org.codehaus.groovy.runtime.GStringImpl
+
 /**
  * Encapsulates a String or GString as a JSON type specifically for use with
  * {@link com.github.codeframes.hal.tooling.test.http.HttpClient} to help aid assertions. Also adds asType support to
@@ -33,8 +35,8 @@ class JSON {
             }
         }
 
-        def gStringAsType = GString.metaClass.asType
-        GString.metaClass.asType = { Class target ->
+        def gStringAsType = GStringImpl.metaClass.asType
+        GStringImpl.metaClass.asType = { Class target ->
             if (JSON == target) {
                 return new JSON((GString) delegate)
             } else {
